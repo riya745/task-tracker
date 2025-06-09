@@ -1,13 +1,25 @@
-const { Op } = require("sequelize");
+// const { Op } = require("sequelize");
 const repo = require("../repository/taskRepository");
+
 
 exports.getTasks = async (req, res) => {
   try {
     const { user } = req;
+    const { status, sort } = req.query;
+
     let conditionGetTasks = {
-      raw: true,
-      where: { user_id: user.id }
+      where: { user_id: user.id },
+      order: []
     };
+
+    if (status === "pending" || status === "completed") {
+      conditionGetTasks.where.status = status;
+    }
+
+    if (sort === "asc" || sort === "desc") {
+      conditionGetTasks.order.push(["due_date", sort]);
+    }
+
     let tasks = await repo.getAllTasks(conditionGetTasks);
     res.status(200).send({
       success: true,
@@ -22,9 +34,14 @@ exports.getTasks = async (req, res) => {
   }
 };
 
+
 exports.createTask = async (req, res) => {
   try {
     const { user, body } = req;
+    const validStatuses = ["pending", "completed"];
+    if (!validStatuses.includes(body.status)) {
+       return res.status(400).send({ success: false, message: "Invalid task status." });
+    }
     let data = {
       title: body.title,
       description: body.description,
@@ -32,6 +49,7 @@ exports.createTask = async (req, res) => {
       status: body.status,
       user_id: user.id
     };
+    
     let task = await repo.createTask(data);
     res.status(200).send({
       success: true,

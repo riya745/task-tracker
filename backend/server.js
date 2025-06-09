@@ -14,9 +14,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 
 // Sync DB
-db.sequelize.sync().then(() => {
-  console.log("Database connected.");
-});
+db.sequelize.sync()
+  .then(() => console.log("Database connected."))
+  .catch((err) => console.error("Database connection failed:", err));
 
 const PORT = process.env.APP_PORT || 5000;
 app.listen(PORT, () => {
