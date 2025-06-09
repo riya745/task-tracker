@@ -6,14 +6,14 @@ const repo = require("../repository/authRepository");
 exports.register = async (req, res) => {
   try {
     const { username, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    let data = { username, password: hashedPassword };
-    let user = await repo.createUser(data);
     const existingUser = await repo.getUserByUsername({ where: { username } });
     if (existingUser) {
        return res.status(400).send({ success: false, message: "Username already taken." });
     }
-
+    const hashedPassword = await bcrypt.hash(password, 10);
+    let data = { username, password: hashedPassword };
+    let user = await repo.createUser(data);
+    
     res.status(200).send({
       success: true,
       message: "User registered successfully",
